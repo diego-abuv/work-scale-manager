@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: workscale-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: workscale
+      POSTGRES_PASSWORD: workscale_dev_password
+      POSTGRES_DB: workscale
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workscale -d workscale"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
