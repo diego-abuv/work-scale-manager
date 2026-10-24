@@ -4,7 +4,7 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import { PrismaService } from '../src/infra/prisma/prisma.service.js';
 
-describe('AppController (e2e)', () => {
+describe('Companies (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -12,7 +12,19 @@ describe('AppController (e2e)', () => {
       imports: [AppModule],
     })
       .overrideProvider(PrismaService)
-      .useValue({ company: { findMany: async () => [] } })
+      .useValue({
+        company: {
+          findMany: async () => [],
+          findUnique: async () => null,
+          create: async () => ({
+            id: 'uuid-1',
+            name: 'ACME',
+            slug: 'acme',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }),
+        },
+      })
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -23,17 +35,26 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 
-  it('GET /work-scale-manager', () => {
+  it('GET /companies/:id retorna 404 quando nao existe', () => {
     return request(app.getHttpServer())
-      .get('/work-scale-manager')
-      .expect(200)
-      .expect('Hello World!');
+      .get('/companies/uuid-1')
+      .expect(404);
   });
 
-  it('GET /work-scale-manager/companies', () => {
+  it('POST /companies cria uma empresa', () => {
     return request(app.getHttpServer())
-      .get('/work-scale-manager/companies')
-      .expect(200)
-      .expect([]);
+      .post('/companies')
+      .send({ name: 'ACME', slug: 'acme' })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body.slug).toBe('acme');
+      });
+  });
+
+  it('POST /companies rejeita payload invalido', () => {
+    return request(app.getHttpServer())
+      .post('/companies')
+      .send({ name: '', slug: '' })
+      .expect(400);
   });
 });

@@ -17,5 +17,21 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workscale-app
+    restart: unless-stopped
+    ports:
+      - "3500:3500"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://workscale:workscale_dev_password@postgres:5432/workscale
+      PORT: 3500
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   pgdata:
