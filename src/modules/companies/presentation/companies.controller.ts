@@ -10,16 +10,24 @@ import {
   Put,
   UsePipes,
   ValidationPipe,
+  UseInterceptors,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { CompanyService } from '../application/company.service.js';
 import { CompanyResponseDto } from './dtos/company.response.dto.js';
 import { CreateCompanyRequestDto } from './dtos/create-company.request.dto.js';
 import { UpdateCompanyRequestDto } from './dtos/update-company.request.dto.js';
 import { mapCompanyError } from './company-error.mapper.js';
+// import { LoggerService } from '../../../shared/logger/logger.service.js';
+import { LogInterceptor } from '../../../shared/logger/logger.interceptor.js';
 
+@UseInterceptors(LogInterceptor)
 @Controller('companies')
 export class CompaniesController {
-  constructor(private readonly service: CompanyService) {}
+  constructor(
+    private readonly service: CompanyService,
+    // private readonly logger: LoggerService,
+  ) {}
 
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -51,7 +59,9 @@ export class CompaniesController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string): Promise<CompanyResponseDto> {
+  async findById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<CompanyResponseDto> {
     const company = await this.service.findById(id);
     if (!company) throw new NotFoundException();
     return CompanyResponseDto.from(company);
@@ -60,7 +70,7 @@ export class CompaniesController {
   @Patch(':id')
   @UsePipes(new ValidationPipe({ transform: true }))
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCompanyRequestDto,
   ): Promise<CompanyResponseDto> {
     try {
@@ -75,7 +85,7 @@ export class CompaniesController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<void> {
+  async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     try {
       await this.service.delete(id);
     } catch (error) {
@@ -86,7 +96,7 @@ export class CompaniesController {
   @Put(':id')
   @UsePipes(new ValidationPipe({ transform: true }))
   async replace(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateCompanyRequestDto,
   ): Promise<CompanyResponseDto> {
     try {

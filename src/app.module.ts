@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './infra/prisma/prisma.module.js';
 import { CompaniesModule } from './modules/companies/companies.module.js';
+import { LoggerService } from './shared/logger/logger.service.js';
 
 @Module({
   imports: [
@@ -11,5 +12,9 @@ import { CompaniesModule } from './modules/companies/companies.module.js';
     PrismaModule,
     CompaniesModule,
   ],
+  providers: [
+    { provide: LoggerService, useFactory: () => new LoggerService() },
+  ],
+  exports: [LoggerService],
 })
 export class AppModule {}

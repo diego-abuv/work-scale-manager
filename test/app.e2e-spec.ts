@@ -37,7 +37,7 @@ describe('Companies (e2e)', () => {
 
   it('GET /companies/:id retorna 404 quando nao existe', () => {
     return request(app.getHttpServer())
-      .get('/companies/uuid-1')
+      .get('/companies/c03843c5-1913-429f-9c46-574ecf64737f')
       .expect(404);
   });
 

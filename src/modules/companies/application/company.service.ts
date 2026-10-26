@@ -1,6 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Company } from '../domain/company.entity.js';
-import { COMPANY_REPOSITORY, type ICompanyRepository } from '../domain/company.repository.port.js';
+import {
+  COMPANY_REPOSITORY,
+  type ICompanyRepository,
+} from '../domain/company.repository.port.js';
 import { CompanyNotFoundError } from '../domain/errors/company.errors.js';
 import { CreateCompanyDto } from './dtos/create-company.dto.js';
 import { UpdateCompanyDto } from './dtos/update-company.dto.js';
