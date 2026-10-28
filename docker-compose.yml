@@ -24,14 +24,47 @@ services:
     container_name: workscale-app
     restart: unless-stopped
     ports:
-      - "3500:3500"
+      - "127.0.0.1:3500:3500"
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://workscale:workscale_dev_password@postgres:5432/workscale
       PORT: 3500
+      TRUST_PROXY: "true"
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3500/health',(r)=>process.exit(r.statusCode<500 ? 0 : 1)).end()"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    container_name: workscale-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      app:
+        condition: service_healthy
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: workscale-certbot
+    restart: unless-stopped
+    profiles: [prod]
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs:rw
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot:ro
+    environment:
+      - CERTBOT_AGREE_TERMS=1
+    command: "/bin/echo 'Certbot profile ready for production deployment'"
 
 volumes:
   pgdata:

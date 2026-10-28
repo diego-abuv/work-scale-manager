@@ -54,6 +54,16 @@ describe('Companies (e2e)', () => {
       });
   });
 
+  it('GET /health retorna status ok', () => {
+    const httpServer = app.getHttpServer() as unknown as Server;
+    return request(httpServer)
+      .get('/health')
+      .expect(200)
+      .expect((res) => {
+        expect((res.body as { status: string }).status).toBe('ok');
+      });
+  });
+
   it('POST /companies rejeita payload invalido', () => {
     const httpServer = app.getHttpServer() as unknown as Server;
     return request(httpServer)

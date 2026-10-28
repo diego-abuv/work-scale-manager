@@ -1,0 +1,8 @@
+services:
+  app:
+    # Em produção, o app NÃO expõe porta no host — só acessível pela rede Docker interna.
+    # Remove o mapeamento "127.0.0.1:3500:3500" que existe no docker-compose.yml.
+    ports: []
+
+  certbot:
+    profiles: [prod]
