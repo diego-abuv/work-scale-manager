@@ -21,7 +21,7 @@ API NestJS (ESM) para gestão de escalas/jornada de trabalho, multi-tenant
 npm run start:dev     # dev com watch
 npm run build         # build de produção
 npm run start:prod    # roda dist/ (node dist/main)
-npm run lint          # oxlint --type-aware
+npm run lint          # eslint src/ test/
 npm run format        # prettier
 npm run test          # testes unitários (vitest)
 npm run test:watch
@@ -72,7 +72,7 @@ Direção das dependências: `presentation -> application -> domain` e
 - O client exige **driver adapter**: `new PrismaClient({ adapter: new PrismaPg(...) })`.
 - Clients gerados em `src/generated/prisma-global` e `src/generated/prisma-tenant`.
 - Imports dos clients usam extensão `.js` (ESM).
-- `src/generated/**` não é lintado (configurado no `.oxlintrc.json`).
+- `src/generated/**` não é lintado (configurado no `eslint.config.mjs`).
 
 ## Convenções
 

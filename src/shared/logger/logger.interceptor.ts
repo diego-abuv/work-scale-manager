@@ -5,19 +5,25 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
+import { Request, Response } from 'express';
 import { LoggerService } from './logger.service.js';
 // import { TenantContext } from "../tenant/tenant.context.js";
+
+type HttpError = {
+  status?: number;
+  message?: string;
+};
 
 @Injectable()
 export class LogInterceptor implements NestInterceptor {
   constructor(private readonly logger: LoggerService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const req = context.switchToHttp().getRequest();
-    const res = context.switchToHttp().getResponse();
+    const req = context.switchToHttp().getRequest<Request>();
+    const res = context.switchToHttp().getResponse<Response>();
     const { method, url } = req;
     const start = Date.now();
-    const ip = req.ip ?? req.socket?.remoteAddress;
+    const ip = req.ip ?? req.socket?.remoteAddress ?? 'unknown';
     // const tenant = TenantContext.store?.companyId ?? 'n/a';
     const prefix = `[${ip}]`;
 
@@ -30,12 +36,13 @@ export class LogInterceptor implements NestInterceptor {
             `${method} ${url} ${res.statusCode} - ${ms}ms ${prefix}`,
           );
         },
-        error: (err) => {
+        error: (err: unknown) => {
           const ms = Date.now() - start;
-          const status = err?.status ?? 500;
+          const error = err as HttpError;
+          const status = error?.status ?? 500;
           this.logByStatus(
             status,
-            `${method} ${url} ${status} - ${ms}ms - ${err?.message} ${prefix}`,
+            `${method} ${url} ${status} - ${ms}ms - ${error?.message ?? ''} ${prefix}`,
           );
         },
       }),

@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import { PrismaService } from '../src/infra/prisma/prisma.service.js';
+import { Server } from 'http';
 
 describe('Companies (e2e)', () => {
   let app: INestApplication;
@@ -14,9 +15,9 @@ describe('Companies (e2e)', () => {
       .overrideProvider(PrismaService)
       .useValue({
         company: {
-          findMany: async () => [],
-          findUnique: async () => null,
-          create: async () => ({
+          findMany: () => [],
+          findUnique: () => null,
+          create: () => ({
             id: 'uuid-1',
             name: 'ACME',
             slug: 'acme',
@@ -36,23 +37,26 @@ describe('Companies (e2e)', () => {
   });
 
   it('GET /companies/:id retorna 404 quando nao existe', () => {
-    return request(app.getHttpServer())
+    const httpServer = app.getHttpServer() as unknown as Server;
+    return request(httpServer)
       .get('/companies/c03843c5-1913-429f-9c46-574ecf64737f')
       .expect(404);
   });
 
   it('POST /companies cria uma empresa', () => {
-    return request(app.getHttpServer())
+    const httpServer = app.getHttpServer() as unknown as Server;
+    return request(httpServer)
       .post('/companies')
       .send({ name: 'ACME', slug: 'acme' })
       .expect(201)
       .expect((res) => {
-        expect(res.body.slug).toBe('acme');
+        expect((res.body as { slug: string }).slug).toBe('acme');
       });
   });
 
   it('POST /companies rejeita payload invalido', () => {
-    return request(app.getHttpServer())
+    const httpServer = app.getHttpServer() as unknown as Server;
+    return request(httpServer)
       .post('/companies')
       .send({ name: '', slug: '' })
       .expect(400);
