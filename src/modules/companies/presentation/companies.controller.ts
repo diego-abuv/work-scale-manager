@@ -20,7 +20,9 @@ import { UpdateCompanyRequestDto } from './dtos/update-company.request.dto.js';
 import { mapCompanyError } from './company-error.mapper.js';
 // import { LoggerService } from '../../../shared/logger/logger.service.js';
 import { LogInterceptor } from '../../../shared/logger/logger.interceptor.js';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('Companies')
 @UseInterceptors(LogInterceptor)
 @Controller('companies')
 export class CompaniesController {
@@ -30,6 +32,8 @@ export class CompaniesController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'Criar empresa' })
+  @ApiResponse({ status: 201, description: 'Empresa criada' })
   @UsePipes(new ValidationPipe({ transform: true }))
   async create(
     @Body() dto: CreateCompanyRequestDto,
@@ -46,12 +50,16 @@ export class CompaniesController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Listar empresas' })
+  @ApiResponse({ status: 200, description: 'Lista' })
   async findAll(): Promise<CompanyResponseDto[]> {
     const companies = await this.service.findAll();
     return companies.map((company) => CompanyResponseDto.from(company));
   }
 
   @Get('slug/:slug')
+  @ApiOperation({ summary: 'Buscar empresa por slug' })
+  @ApiResponse({ status: 200, description: 'Empresa' })
   async findBySlug(@Param('slug') slug: string): Promise<CompanyResponseDto> {
     const company = await this.service.findBySlug(slug);
     if (!company) throw new NotFoundException();
@@ -59,6 +67,9 @@ export class CompaniesController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Buscar empresa por id' })
+  @ApiResponse({ status: 200, description: 'Empresa' })
+  @ApiResponse({ status: 404, description: 'Nao encontrada' })
   async findById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<CompanyResponseDto> {
@@ -68,6 +79,10 @@ export class CompaniesController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Atualizar empresa' })
+  @ApiResponse({ status: 200, description: 'Atualizada' })
+  @ApiResponse({ status: 400, description: 'Payload invalido' })
+  @ApiResponse({ status: 404, description: 'Nao encontrada' })
   @UsePipes(new ValidationPipe({ transform: true }))
   async update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -85,6 +100,10 @@ export class CompaniesController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Excluir empresa' })
+  @ApiResponse({ status: 200, description: 'Excluida' })
+  @ApiResponse({ status: 400, description: 'Id invalido' })
+  @ApiResponse({ status: 404, description: 'Nao encontrada' })
   async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     try {
       await this.service.delete(id);
@@ -94,6 +113,10 @@ export class CompaniesController {
   }
 
   @Put(':id')
+  @ApiOperation({ summary: 'Substituir empresa' })
+  @ApiResponse({ status: 200, description: 'Substituida' })
+  @ApiResponse({ status: 400, description: 'Payload invalido' })
+  @ApiResponse({ status: 404, description: 'Nao encontrada' })
   @UsePipes(new ValidationPipe({ transform: true }))
   async replace(
     @Param('id', ParseUUIDPipe) id: string,
